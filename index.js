@@ -57,6 +57,8 @@ function setPrevious (data) {
 async function main() {
   if (process.env.PUSHME_CODE === undefined) return console.log('Please set a PUSHME_CODE in .env')
   const command = process.argv.slice(2).join(' ')
+  if (command === '') return console.log('Command is empty')
+  
   const output = await execShellCommand(command)
   const outputLines = output.split('\n').filter(line => !!line)
   const lastLine = outputLines[outputLines.length - 1]
