@@ -6,7 +6,7 @@ import { URL } from 'url'
 
 const ENV_PATH = new URL('./.env', import.meta.url).pathname
 dotenv.config({ path: ENV_PATH })
-  
+
 const exec = childProcess.exec;
 
 // How to use
@@ -77,7 +77,10 @@ async function main() {
 
   const output = await execShellCommand(command)
   const outputLines = output.split('\n').filter(line => !!line)
-  const lastLine = outputLines[outputLines.length - 1]
+  
+  let lastLine = outputLines[outputLines.length - 1]
+  if (lastLine === undefined) lastLine = 'Command failed, got undefined'
+
   const previousLine = getPrevious(commandHash)
   console.log('last output', 'previous', [lastLine, previousLine])
   
