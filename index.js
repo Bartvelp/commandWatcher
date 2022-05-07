@@ -28,6 +28,21 @@ function execShellCommand (cmd) {
   });
 }
 
+// https://stackoverflow.com/a/52171480/5329317
+function hash (str, seed = 0) {
+  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0, ch; i < str.length; i++) {
+      ch = str.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 2654435761);
+      h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1>>>16), 2246822507) ^ Math.imul(h2 ^ (h2>>>13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2>>>16), 2246822507) ^ Math.imul(h1 ^ (h1>>>13), 3266489909);
+  const result =  4294967296 * (2097151 & h2) + (h1>>>0);
+  return result.toString()
+};
+
+
 function sendNotification (title, message) {
   fetch('https://pushme.vercel.app/api/sendNotification', {
     method: 'POST',
@@ -42,32 +57,33 @@ function sendNotification (title, message) {
   })
 }
 
-function getPrevious() {
-  const prevPath = '/tmp/previous-output-watcher'
+function getPrevious(commandHash) {
+  const prevPath = `/tmp/previous-output-watcher-${commandHash}`
   if (fs.existsSync(prevPath)) {
     const data = fs.readFileSync(prevPath, 'utf8')
     return data
   } else return ''
 }
 
-function setPrevious (data) {
-  fs.writeFileSync("/tmp/previous-output-watcher", data)
+function setPrevious (data, commandHash) {
+  fs.writeFileSync(`/tmp/previous-output-watcher-${commandHash}`, data)
 }
 
 async function main() {
   if (process.env.PUSHME_CODE === undefined) return console.log('Please set a PUSHME_CODE in .env')
   const command = process.argv.slice(2).join(' ')
   if (command === '') return console.log('Command is empty')
-  
+  const commandHash = hash(command)
+
   const output = await execShellCommand(command)
   const outputLines = output.split('\n').filter(line => !!line)
   const lastLine = outputLines[outputLines.length - 1]
-  const previousLine = getPrevious()
+  const previousLine = getPrevious(commandHash)
   console.log('last output', 'previous', [lastLine, previousLine])
   
   if (previousLine === lastLine) return // Were done here
   sendNotification('New output', lastLine)
-  setPrevious(lastLine)
+  setPrevious(lastLine, commandHash)
 }
 
 main()
