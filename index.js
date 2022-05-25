@@ -85,7 +85,7 @@ async function main() {
   console.log('last output', 'previous', [lastLine, previousLine])
   
   if (previousLine === lastLine) return // Were done here
-  sendNotification('New output', lastLine)
+  sendNotification('New output', `$ ${command}\nnow:${lastLine}\nwas:${previousLine}`)
   setPrevious(lastLine, commandHash)
 }
 
