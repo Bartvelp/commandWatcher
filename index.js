@@ -86,7 +86,7 @@ async function main() {
   if (lastLine === undefined) lastLine = 'Command failed, got undefined'
 
   const previousLine = getPrevious(commandHash)
-  console.log('last output', 'previous', [lastLine, previousLine])
+  console.log((new Date()).toISOString(), 'last output', 'previous', [lastLine, previousLine])
   
   if (previousLine === lastLine) return // Were done here
   sendNotification('New command watcher output', `${user}@${hostname}\n$ ${command}\nnow: ${lastLine}\nwas: ${previousLine}`)
