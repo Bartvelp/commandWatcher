@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import childProcess from 'child_process'
 import fs from 'fs'
 import fetch from 'node-fetch'
@@ -75,6 +76,9 @@ async function main() {
   if (command === '') return console.log('Command is empty')
   const commandHash = hash(command)
 
+  const user = (await execShellCommand('whoami')).replace('\n', '')
+  const hostname = (await execShellCommand('hostname')).replace('\n', '')
+
   const output = await execShellCommand(command)
   const outputLines = output.split('\n').filter(line => !!line)
   
@@ -85,7 +89,7 @@ async function main() {
   console.log('last output', 'previous', [lastLine, previousLine])
   
   if (previousLine === lastLine) return // Were done here
-  sendNotification('New output', `$ ${command}\nnow:${lastLine}\nwas:${previousLine}`)
+  sendNotification('New command watcher output', `${user}@${hostname}\n$ ${command}\nnow: ${lastLine}\nwas: ${previousLine}`)
   setPrevious(lastLine, commandHash)
 }
 
