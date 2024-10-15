@@ -1,5 +1,4 @@
-#!/bin/env node
-// ln -s /home/bart/Projects/commandWatcher/index.js /home/bart/.local/bin/watch-cmd
+#!/usr/bin/env node
 import childProcess from 'child_process'
 import fs from 'fs'
 import fetch from 'node-fetch'
@@ -77,6 +76,9 @@ async function main() {
   if (command === '') return console.log('Command is empty')
   const commandHash = hash(command)
 
+  const user = (await execShellCommand('whoami')).replace('\n', '')
+  const hostname = (await execShellCommand('hostname')).replace('\n', '')
+
   const output = await execShellCommand(command)
   const outputLines = output.split('\n').filter(line => !!line)
   
@@ -84,12 +86,12 @@ async function main() {
   if (lastLine === undefined) lastLine = 'Command failed, got undefined'
 
   const previousLine = getPrevious(commandHash)
-  console.log('last output', 'previous', [lastLine, previousLine], 'isSame', previousLine === lastLine)
+  console.log((new Date()).toISOString(), 'last output', 'previous', [lastLine, previousLine])
   
   if (previousLine === lastLine) return // Were done here
-  sendNotification('New output', `$ ${command}\nnow: ${lastLine}\nwas: ${previousLine}`)
+  sendNotification('New CW output', `${user}@${hostname}\n$ ${command}\nnow: ${lastLine}\nwas: ${previousLine}`)
   setPrevious(lastLine, commandHash)
-  if(process.env.WA_URL && process.env.WA_GROUPNAME) sendWhatsAppMsg(process.env.WA_GROUPNAME, 'New output', `$ ${command}\nnow: ${outputLines.slice(-10).join('\n')}\nwas: ${previousLine}`)
+  if(process.env.WA_URL && process.env.WA_GROUPNAME) sendWhatsAppMsg(process.env.WA_GROUPNAME, `New CW output ${user}@${hostname}\n $ ${command}\nnow: ${outputLines.slice(-10).join('\n')}\nwas: ${previousLine}`)
 }
 
 main()
