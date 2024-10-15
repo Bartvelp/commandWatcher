@@ -91,12 +91,18 @@ async function main() {
   if (previousLine === lastLine) return // Were done here
   sendNotification('New CW output', `${user}@${hostname}\n$ ${command}\nnow: ${lastLine}\nwas: ${previousLine}`)
   setPrevious(lastLine, commandHash)
-  if(process.env.WA_URL && process.env.WA_GROUPNAME) sendWhatsAppMsg(process.env.WA_GROUPNAME, `New CW output ${user}@${hostname}\n $ ${command}\nnow: ${outputLines.slice(-10).join('\n')}\nwas: ${previousLine}`)
+  if(process.env.WA_URL && process.env.WA_GROUPNAME) {
+    sendWhatsAppMsg(
+      process.env.WA_URL, 
+      process.env.WA_GROUPNAME, 
+      `New CW output ${user}@${hostname}\n $ ${command}\nnow: ${outputLines.slice(-10).join('\n')}\nwas: ${previousLine}`
+    )
+  }
 }
 
 main()
 
-async function sendWhatsAppMsg(groupName, message) {
+async function sendWhatsAppMsg(WA_URL, groupName, message) {
   try {
       const urlParams = new URLSearchParams({
           groupName,
