@@ -1,3 +1,5 @@
+#!/bin/env node
+// ln -s /home/bart/Projects/commandWatcher/index.js /home/bart/.local/bin/watch-cmd
 import childProcess from 'child_process'
 import fs from 'fs'
 import fetch from 'node-fetch'
@@ -19,7 +21,7 @@ const exec = childProcess.exec;
  */
 function execShellCommand (cmd) {
   return new Promise((resolve, reject) => {
-    exec(cmd + " && exit 0", (error, stdout, stderr) => {
+    exec(cmd + " || exit 0", (error, stdout, stderr) => {
     if (error) {
       console.warn(error);
     }
@@ -82,11 +84,26 @@ async function main() {
   if (lastLine === undefined) lastLine = 'Command failed, got undefined'
 
   const previousLine = getPrevious(commandHash)
-  console.log('last output', 'previous', [lastLine, previousLine])
+  console.log('last output', 'previous', [lastLine, previousLine], 'isSame', previousLine === lastLine)
   
   if (previousLine === lastLine) return // Were done here
-  sendNotification('New output', `$ ${command}\nnow:${lastLine}\nwas:${previousLine}`)
+  sendNotification('New output', `$ ${command}\nnow: ${lastLine}\nwas: ${previousLine}`)
   setPrevious(lastLine, commandHash)
+  if(process.env.WA_URL && process.env.WA_GROUPNAME) sendWhatsAppMsg(process.env.WA_GROUPNAME, 'New output', `$ ${command}\nnow: ${outputLines.slice(-10).join('\n')}\nwas: ${previousLine}`)
 }
 
 main()
+
+async function sendWhatsAppMsg(groupName, message) {
+  try {
+      const urlParams = new URLSearchParams({
+          groupName,
+          message
+      })
+
+      const resp = await fetch(WA_URL + '/sendMessage?' + urlParams)
+      if (resp.status !== 201) throw new Error('Failed to send' + await resp.text())
+  } catch(err) {
+      console.error('Caught error', err)
+  }
+}
