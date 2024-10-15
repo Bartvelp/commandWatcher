@@ -95,7 +95,7 @@ async function main() {
     sendWhatsAppMsg(
       process.env.WA_URL, 
       process.env.WA_GROUPNAME, 
-      `New CW output ${user}@${hostname}\n $ ${command}\nnow: ${outputLines.slice(-10).join('\n')}\nwas: ${previousLine}`
+      `New CW output ${user}@${hostname}\n $ ${command}\nnow:\n${outputLines.slice(-10).join('\n')}\nwas:\n${previousLine}`
     )
   }
 }
